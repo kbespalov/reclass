@@ -7,11 +7,25 @@
 # Released under the terms of the Artistic Licence 2.0
 #
 import types
+
+import yaml
+
 from reclass.defaults import PARAMETER_INTERPOLATION_DELIMITER,\
                              PARAMETER_DICT_KEY_OVERRIDE_PREFIX
 from reclass.utils.dictpath import DictPath
 from reclass.utils.refvalue import RefValue
 from reclass.errors import InfiniteRecursionError, UndefinedVariableError
+
+
+class ClassNameAwareParam(yaml.YAMLObject):
+    """Describe a parameter from a relcass model"""
+
+    yaml_tag = "!"
+
+    def __init__(self, value, class_name):
+        self.v = value
+        self.c = class_name
+
 
 class Parameters(object):
     '''
@@ -39,12 +53,13 @@ class Parameters(object):
     DEFAULT_PATH_DELIMITER = PARAMETER_INTERPOLATION_DELIMITER
     DICT_KEY_OVERRIDE_PREFIX = PARAMETER_DICT_KEY_OVERRIDE_PREFIX
 
-    def __init__(self, mapping=None, delimiter=None):
-        if delimiter is None:
-            delimiter = Parameters.DEFAULT_PATH_DELIMITER
-        self._delimiter = delimiter
+    def __init__(self, mapping=None, delimiter=None, owner=None):
+
+        self._delimiter = delimiter or Parameters.DEFAULT_PATH_DELIMITER
         self._base = {}
         self._occurrences = {}
+        self._owner = owner
+
         if mapping is not None:
             # we initialise by merging, otherwise the list of references might
             # not be updated
@@ -71,6 +86,10 @@ class Parameters(object):
         return self._base.copy()
 
     def _update_scalar(self, cur, new, path):
+
+        if not isinstance(new, (RefValue, ClassNameAwareParam)):
+            new = ClassNameAwareParam(new, self._owner)
+
         if isinstance(cur, RefValue) and path in self._occurrences:
             # If the current value already holds a RefValue, we better forget
             # the occurrence, or else interpolate() will later overwrite

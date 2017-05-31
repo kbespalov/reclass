@@ -45,7 +45,7 @@ class YamlFile(object):
         parameters = self._data.get('parameters')
         if parameters is None:
             parameters = {}
-        parameters = datatypes.Parameters(parameters)
+        parameters = datatypes.Parameters(parameters, owner=name or self._path)
 
         env = self._data.get('environment', default_environment)
 

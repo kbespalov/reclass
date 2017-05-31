@@ -78,7 +78,7 @@ class Core(object):
     def _get_input_data_entity(self):
         if not self._input_data:
             return Entity(name='empty (input data)')
-        p = Parameters(self._input_data)
+        p = Parameters(self._input_data, owner='__input__')
         return Entity(parameters=p, name='input data')
 
     def _recurse_entity(self, entity, merge_base=None, seen=None, nodename=None):

@@ -18,15 +18,19 @@ class Entity(object):
     '''
     def __init__(self, classes=None, applications=None, parameters=None,
                  uri=None, name=None, environment=None):
-        if classes is None: classes = Classes()
-        self._set_classes(classes)
-        if applications is None: applications = Applications()
-        self._set_applications(applications)
-        if parameters is None: parameters = Parameters()
-        self._set_parameters(parameters)
+
         self._uri = uri or ''
         self._name = name or ''
         self._environment = environment or ''
+
+        classes = classes or Classes()
+        self._set_classes(classes)
+
+        applications = applications or Applications()
+        self._set_applications(applications)
+
+        parameters = parameters or Parameters(owner=name)
+        self._set_parameters(parameters)
 
     name = property(lambda s: s._name)
     uri = property(lambda s: s._uri)
